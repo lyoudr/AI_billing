@@ -1,0 +1,3 @@
+Hello! This is word count example.
+My name is Ann.
+Nice to meet you.
