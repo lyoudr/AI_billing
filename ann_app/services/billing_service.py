@@ -8,6 +8,7 @@ from apache_beam.options.pipeline_options import PipelineOptions
 from apache_beam.io.gcp.internal.clients import bigquery
 
 from http import HTTPStatus
+from decimal import Decimal
 import apache_beam as beam
 import argparse  
 
@@ -33,6 +34,13 @@ import argparse
 """
 
 
+class Bill:
+    def __init__(self, service, cost, company):
+        self.service: str = service
+        self.cost: float = float(cost)
+        self.company: str = company
+
+
 def save_billing_data_to_db(data: BillingReportModel) -> None:
     app = create_app()
     with app.app_context():
@@ -51,18 +59,23 @@ def save_billing_data_to_db(data: BillingReportModel) -> None:
             )
 
 
-def count_fee_and_save_to_db(element) -> None: 
+def count_fee_and_save_to_db(element) -> None:
     company, total_cost = element
-    tech_fee = total_cost * 0.05  # Applying 5% Serving Fee
-    discounted_cost = total_cost * 0.98  # Appying 98% Discount
-    print(company, total_cost, discounted_cost, tech_fee)
+    tech_fee = total_cost * Decimal('0.05')  # Applying 5% Serving Fee
+    discounted_cost = total_cost * Decimal('0.98')  # Appying 98% Discount
+    print(
+        f"company:{company}"
+        f"total_cost:{total_cost}",
+        f"discounted_cost:{discounted_cost}",
+        f"tech_fee:{tech_fee}"
+    )
     data = BillingReportModel(
         company=company,
         total_cost=total_cost,
         discounted_cost=discounted_cost,
         tech_fee=tech_fee,
     )
-    # save_billing_data_to_db(data)
+    save_billing_data_to_db(data)
 
 
 def transform_and_save_data(billing_data) -> None:
@@ -86,16 +99,10 @@ def transform_and_save_data(billing_data) -> None:
             count_fee_and_save_to_db
         )
     )
-class Bill:
-    def __init__(self, service, cost, company):
-        self.service: str = service
-        self.cost: float = float(cost)
-        self.company: str = company
 
 
 # handle billing data
 def handle_csv_billing_data(argv=None, save_main_session=True):
-
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '--input',
@@ -179,6 +186,9 @@ def handle_bq_billing_data(argv=None, save_main_session=True):
             | 'Map Company-Cost' >> beam.Map(lambda row: (row['company'], row['cost']))
             # Group by key (company) and sum up the costs for each company.
             | 'Sum Costs by Company' >> beam.CombinePerKey(sum)
+            | 'Count Several Fees and Save to DB' >> beam.Map(
+                count_fee_and_save_to_db
+            )
         )
 
         def print_ele(element):
@@ -188,6 +198,4 @@ def handle_bq_billing_data(argv=None, save_main_session=True):
 
 
 if __name__ == '__main__':
-    # handle_csv_billing_data()
     handle_bq_billing_data()
-

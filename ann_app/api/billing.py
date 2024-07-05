@@ -5,7 +5,6 @@ from ann_app.utils.db_session import session_scope
 from ann_app.db_models import GCPBill
 from . import api 
 
-from sqlalchemy import func
 from flask import request
 from flasgger import swag_from
 import pandas as pd 
@@ -13,7 +12,7 @@ import pandas as pd
 
 @api.route(
     "/count_billing", 
-    methods = ["POST"]
+    methods=["POST"]
 )
 @swag_from({
     "tags": ["billing"],
@@ -30,7 +29,8 @@ def count_billing():
     handle_csv_billing_data()
     return gen_api_response(ApiCode.SUCCESS, 'process billing data successfully')
 
-@api.route('/import_gcp_bill', methods = ['POST'])
+
+@api.route('/import_gcp_bill', methods=['POST'])
 @swag_from({
     "summary": "Handle import gcp bill",
     "description": "Import GCP billing data from a CSV file to the database.",
@@ -74,27 +74,27 @@ def import_gcp_bill():
         for index, row in df.iterrows():
             try:
                 gcp_bill = GCPBill(
-                    account_name = row['帳單帳戶名稱'],
-                    account_id = row['帳單帳戶 ID'],
-                    project_name = row['專案名稱'],
-                    project_id = row['專案 ID'],
-                    project_number = row['專案編號'],
-                    service_name = row['服務說明'],
-                    service_id = row['服務 ID'],
-                    service_sku = row['SKU 說明'],
-                    sku_id = row['SKU ID'],
-                    start_date = row['用量開始日期'],
-                    end_date = row['用量結束日期'],
-                    amount = row['用量'],
-                    amount_unit = row['用量單位'],
-                    detail_fee = row['詳細費用金額'],
-                    price = row['定價費用'],
-                    unrounded_fee = row['未捨入費用 ($)'],
-                    rounded_fee = row['費用 ($)']
+                    account_name=row['帳單帳戶名稱'],
+                    account_id=row['帳單帳戶 ID'],
+                    project_name=row['專案名稱'],
+                    project_id=row['專案 ID'],
+                    project_number=row['專案編號'],
+                    service_name=row['服務說明'],
+                    service_id=row['服務 ID'],
+                    service_sku=row['SKU 說明'],
+                    sku_id=row['SKU ID'],
+                    start_date=row['用量開始日期'],
+                    end_date=row['用量結束日期'],
+                    amount=row['用量'],
+                    amount_unit=row['用量單位'],
+                    detail_fee=row['詳細費用金額'],
+                    price=row['定價費用'],
+                    unrounded_fee=row['未捨入費用 ($)'],
+                    rounded_fee=row['費用 ($)']
                 ) 
                 session.add(gcp_bill)
             except Exception as e:
-                continue
+                raise Exception(str(e))
     return gen_api_response(ApiCode.SUCCESS, 'File uploaded and data imported to database successfully')
 
 

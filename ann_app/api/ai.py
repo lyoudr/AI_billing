@@ -1,8 +1,8 @@
 from ann_app.utils.api_code import ApiCode
 from ann_app.utils.api_response import gen_api_response
 from ann_app.utils.db_session import session_scope
-from ann_app.db_models import GCPBill
-from ann_app.services.ai_service import predict_future_cost
+from ann_app.db_models import BillingReport
+from ann_app.services.ai_service import AnnLinearRegression
 from . import api 
 
 from sqlalchemy import func
@@ -23,23 +23,18 @@ from flasgger import swag_from
 })
 def do_prediction():
     """
-    Predict cost in the future
+    Predict company cost in the future
     """
     with session_scope() as session:
         # 1. We read data from database, service name: sum(cost)
-        results = session.query(
-            GCPBill.service_name,
-            func.sum(GCPBill.rounded_fee)
-        ).group_by(
-            GCPBill.service_name
-        ).all()
+        results = session.query(BillingReport).all()
     
         # 2. We turn service name to number 
         mappings = {
-            'App Engine': 1,
-            'Compute Engine': 2,
-            'Networking': 3,
-            'BigQuery': 4
+            'A': 1,
+            'B': 2,
+            'C': 3,
+            'D': 4
         }
     
         # 3. We put data to x, y axis in order for future predictions
@@ -49,13 +44,33 @@ def do_prediction():
             x.append(mappings.get(item[0]))
             y.append(float(item[1]))
     
-        # For relationship between service and cost, please refer to "prediction.ipynb"
-        future_cost, r2 = predict_future_cost(x, y)
+        l_model = AnnLinearRegression(x=x, y=y)
+        l_model.define_m_b()
+        
+        # first loss value
+        loss_value = l_model.loss_func(
+            l_model.X,
+            l_model.Y,
+            l_model.b,
+            l_model.m
+        )
+        print(f"first loss value is {loss_value}")
+
+        # gradient descent to optimize m, b
+        new_m, new_b = l_model.gradient_descent(l_model.m, l_model.b)
+
+        # optimized model, and its loss value
+        new_loss_value = l_model.loss_func(
+            l_model.X,
+            l_model.Y,
+            new_b,
+            new_m,
+        )
+        print(f"new loss value is {new_loss_value}")
 
     return gen_api_response(
         ApiCode.SUCCESS, 
         {
-            "future_cost_for_Compute_Engine": future_cost,
-            "accuracy": r2
+            "loss_value": new_loss_value
         }
     )
