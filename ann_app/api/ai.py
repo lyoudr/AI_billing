@@ -36,14 +36,14 @@ def do_prediction():
             'C': 3,
             'D': 4
         }
-    
+
         # 3. We put data to x, y axis in order for future predictions
         x = []
         y = []
         for item in results:
-            x.append(mappings.get(item[0]))
-            y.append(float(item[1]))
-    
+            x.append(mappings.get(item.company))
+            y.append(float(item.total_cost))
+
         l_model = AnnLinearRegression(x=x, y=y)
         l_model.define_m_b()
         
@@ -57,7 +57,7 @@ def do_prediction():
         print(f"first loss value is {loss_value}")
 
         # gradient descent to optimize m, b
-        new_m, new_b = l_model.gradient_descent(l_model.m, l_model.b)
+        new_m, new_b = l_model.gradient_descent()
 
         # optimized model, and its loss value
         new_loss_value = l_model.loss_func(
@@ -71,6 +71,7 @@ def do_prediction():
     return gen_api_response(
         ApiCode.SUCCESS, 
         {
+            "old_loss_value": loss_value,
             "loss_value": new_loss_value
         }
     )

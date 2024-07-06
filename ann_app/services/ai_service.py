@@ -54,7 +54,9 @@ class AnnLinearRegression():
         self.b = None
 
     def define_m_b(self):
-        self.m, self.b = np.polyfit(self.X, self.Y, 1)
+        m, b = np.polyfit(self.X, self.Y, 1)
+        self.m = round(m, 2)
+        self.b = round(b, 2)
 
     # Make predictions substituting the obtained slope and intercept 
     # coefficients into the equation Y = mx + b
@@ -87,58 +89,45 @@ class AnnLinearRegression():
         ax.set_zlabel('Loss')
         plt.show()
 
-    # Gradient Descent 
-    def gradient_descent(self, m, b):
-        SX = pd.Series(self.X)
-        SY = pd.Series(self.Y)
+    def gradient_descent(self, learning_rate=0.5, epochs=100):
+        new_m, new_b = self.m, self.b  # Starting values
+        N = float(len(self.Y))
+        
+        for i in range(epochs):
+            sum_for_m, sum_for_b = 0, 0
+            for x, y in zip(self.X, self.Y):
+                y_pred = new_m * x + new_b
+                sum_for_m += x * (y - y_pred)
+                sum_for_b += y - y_pred
+            D_m = (-2/N) * sum_for_m  # Partial derivative wrt m
+            D_b = (-2/N) * sum_for_b  # Partial derivative wrt b
+            new_m -= learning_rate * D_m
+            new_b -= learning_rate * D_b
 
-        # partial derivative to m
-        def partial_derivative_m(m: float) -> float:
-            derivative = -2 * ((SY - (b + m * SX)) * SX).sum()
-            return derivative
-
-        # partial derivative to b
-        def partial_derivative_b(b: float) -> float:
-            derivative = -2 * ((SY - (b + m * SX))).sum()
-            return derivative
-
-        def recursive_find_best_m(old_m, der_fun, lr):
-            if old_m <= 0.01:
-                return old_m 
-            new_m = old_m - lr * der_fun(old_m)
-            return recursive_find_best_m(new_m, der_fun, lr)
-
-        def recursive_find_best_b(old_b, der_fun, lr):
-            if old_b <= 0.01:
-               return old_b 
-            new_b = old_b - lr * der_fun(old_b)
-            return recursive_find_best_m(new_b, der_fun, lr)
-
-        best_m = recursive_find_best_m(m, partial_derivative_m, lr=1)
-        best_b = recursive_find_best_b(b, partial_derivative_b, lr=1)
-
-        return best_m, best_b
+        self.m = round(new_m, 2)
+        self.b = round(new_b, 2)
+        return self.m, self.b
 
 # -------------------------------------------------------------------------------------------------- #
 # Adagrand
 # w2 <- w1 - ada1/delta1 * g1
-import math 
+# import math 
 
-def adagrand(der_fun, old_der_val, lr, n, old_m) -> float:
-   if old_m <= 0.001:
-      return old_m
-   delta = math.sqrt((der_fun(old_m) ** 2 + (old_der_val) ** 2))
-   new_m = old_m - ((lr / delta) * der_fun(old_m))
-   n += 1
-   return adagrand(der_fun, der_fun(old_m), lr, n, new_m)
+# def adagrand(der_fun, old_der_val, lr, n, old_m) -> float:
+#    if old_m <= 0.001:
+#       return old_m
+#    delta = math.sqrt((der_fun(old_m) ** 2 + (old_der_val) ** 2))
+#    new_m = old_m - ((lr / delta) * der_fun(old_m))
+#    n += 1
+#    return adagrand(der_fun, der_fun(old_m), lr, n, new_m)
 
-m, b = np.polyfit(X, Y, 1)
+# m, b = np.polyfit(X, Y, 1)
 
-best_m_from_ada = adagrand(
-   partial_derivative_m,
-   partial_derivative_m(m),
-   lr = 1,
-   n = 1,
-   old_m = m
-)
-print("best_m_from_adagrand is ->", best_m_from_ada)
+# best_m_from_ada = adagrand(
+#    partial_derivative_m,
+#    partial_derivative_m(m),
+#    lr = 1,
+#    n = 1,
+#    old_m = m
+# )
+# print("best_m_from_adagrand is ->", best_m_from_ada)
