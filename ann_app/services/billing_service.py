@@ -5,8 +5,8 @@ from ann_app.utils.errors import CustomException
 from ann_app.__init__ import create_app 
 
 from apache_beam.options.pipeline_options import PipelineOptions
-from apache_beam.io.gcp.internal.clients import bigquery
 
+from pydantic import BaseModel 
 from http import HTTPStatus
 from decimal import Decimal
 import apache_beam as beam
@@ -33,12 +33,6 @@ import argparse
         - A windowing function tells the runner how to assign elements to one or more initial windows, and how to merge windows of grouped elements. Each element in a PCollection can only be in one window
 """
 
-
-class Bill:
-    def __init__(self, service, cost, company):
-        self.service: str = service
-        self.cost: float = float(cost)
-        self.company: str = company
 
 
 def save_billing_data_to_db(data: BillingReportModel) -> None:
@@ -100,6 +94,12 @@ def transform_and_save_data(billing_data) -> None:
         )
     )
 
+class Bill:
+    def __init__(self, service, cost, company):
+        service: str = service
+        cost: float = float(cost)
+        company: str = company
+
 
 # handle billing data
 def handle_csv_billing_data(argv=None, save_main_session=True):
@@ -127,10 +127,12 @@ def handle_csv_billing_data(argv=None, save_main_session=True):
             known_args.input,
             skip_header_lines=1
         )
-
+        
+                
         # Parse csv file for apache beam
         class ParseCSV(beam.DoFn):
-
+            
+            
             def process(self, element):
                 import csv
                 reader = csv.reader([element])
@@ -146,11 +148,7 @@ def handle_csv_billing_data(argv=None, save_main_session=True):
 
 
 # -------------------------- Read From BigQuery ----------------------
-table_spec = bigquery.TableReference(
-    projectId='ann-project-390401',
-    datasetId='billing',
-    tableId='report'
-)
+
 # read from bigquery 
 def handle_bq_billing_data(argv=None, save_main_session=True):
     # The SQL query to run inside BigQuery.
@@ -198,4 +196,4 @@ def handle_bq_billing_data(argv=None, save_main_session=True):
 
 
 if __name__ == '__main__':
-    handle_bq_billing_data()
+   handle_csv_billing_data()

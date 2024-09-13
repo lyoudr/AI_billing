@@ -16,7 +16,7 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-config.set_main_option('sqlalchemy.url', "mysql+pymysql://ann:annpasswd@localhost:3307/billing")
+config.set_main_option('sqlalchemy.url', "mysql+pymysql://ann:annpasswd@localhost:3306/billing")
 
 # add your model's MetaData object here
 # for 'autogenerate' support
