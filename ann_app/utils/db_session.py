@@ -3,10 +3,12 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from contextlib import contextmanager
 
+import os
 
 @contextmanager
 def session_scope():
     with current_app.app_context():
+        print("sql is ->", current_app.config["SQLALCHEMY_DATABASE_URI"])
         # Create SQLAlchemy engine
         engine = create_engine(current_app.config["SQLALCHEMY_DATABASE_URI"])
         # Create a session factory
@@ -25,7 +27,7 @@ def session_scope():
 
 def get_db():
     # Create SQLAlchemy engine
-    engine = create_engine(current_app.config["SQLALCHEMY_DATABASE_URI"])
+    engine = create_engine('mysql+pymysql://ann:annpasswd@localhost:3306/billing')
     # Create a session factory
     Session = sessionmaker(bind=engine)
     db = Session()

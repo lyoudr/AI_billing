@@ -1,12 +1,11 @@
 from ann_app.utils.db_session import get_db 
 from ann_app.db_models.billing import BillingReport
-from ann_app.models.billing import BillingReportModel
+from ann_app.models.billing import BillingReportModel, Bill
 from ann_app.utils.errors import CustomException
 from ann_app.__init__ import create_app 
 
 from apache_beam.options.pipeline_options import PipelineOptions
 
-from pydantic import BaseModel 
 from http import HTTPStatus
 from decimal import Decimal
 import apache_beam as beam
@@ -55,8 +54,8 @@ def save_billing_data_to_db(data: BillingReportModel) -> None:
 
 def count_fee_and_save_to_db(element) -> None:
     company, total_cost = element
-    tech_fee = total_cost * Decimal('0.05')  # Applying 5% Serving Fee
-    discounted_cost = total_cost * Decimal('0.98')  # Appying 98% Discount
+    tech_fee = Decimal(total_cost) * Decimal('0.05')  # Applying 5% Serving Fee
+    discounted_cost = Decimal(total_cost) * Decimal('0.98')  # Appying 98% Discount
     print(
         f"company:{company}"
         f"total_cost:{total_cost}",
@@ -94,12 +93,6 @@ def transform_and_save_data(billing_data) -> None:
         )
     )
 
-class Bill:
-    def __init__(self, service, cost, company):
-        service: str = service
-        cost: float = float(cost)
-        company: str = company
-
 
 # handle billing data
 def handle_csv_billing_data(argv=None, save_main_session=True):
@@ -111,17 +104,17 @@ def handle_csv_billing_data(argv=None, save_main_session=True):
         help='Input file to process.'
     )
     known_args, pipeline_args = parser.parse_known_args(argv)
-    beam_options = PipelineOptions(
-        pipeline_args,
-        runner='DataflowRunner',
-        project='ann-project-390401',
-        job_name='billing-service',
-        temp_location='gs://ann-billing/temp/',
-        region='asia-east1',
-        service_account_email="742937875290-compute@developer.gserviceaccount.com"
-    )
+    # beam_options = PipelineOptions(
+    #     pipeline_args,
+    #     runner='DataflowRunner',
+    #     project='ann-project-390401',
+    #     job_name='billing-service',
+    #     temp_location='gs://ann-billing/temp/',
+    #     region='asia-east1',
+    #     service_account_email="742937875290-compute@developer.gserviceaccount.com"
+    # )
     
-    with beam.Pipeline(options=beam_options) as pipeline:
+    with beam.Pipeline() as pipeline:
         # Read data from the CSV file
         lines = pipeline | beam.io.ReadFromText(
             known_args.input,
@@ -132,13 +125,16 @@ def handle_csv_billing_data(argv=None, save_main_session=True):
         # Parse csv file for apache beam
         class ParseCSV(beam.DoFn):
             
-            
             def process(self, element):
                 import csv
                 reader = csv.reader([element])
                 row = next(reader)
                 service, cost, company = row[:3]
-                return [Bill(service, float(cost), company)]
+                return [Bill(
+                    service=service, 
+                    cost=float(cost), 
+                    company=company)
+                ]
         
         # Apply the ParseCSV ParDo function to parse the CSV data
         billing_data = lines | beam.ParDo(ParseCSV())

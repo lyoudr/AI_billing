@@ -54,7 +54,7 @@ cqlengine==0.21.0
 python-dotenv==1.0.1
 pandas==2.2.2
 cryptography==43.0.1
-
+confluent-kafka==2.5.3
 # google
 google-api-core==2.17.1
 google-apitools==0.5.31
