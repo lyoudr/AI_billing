@@ -7,8 +7,3 @@ class BillingReportModel(BaseModel):
     total_cost: Decimal 
     discounted_cost: Decimal 
     tech_fee: Decimal 
-
-class Bill(BaseModel):
-    service: str
-    cost: float
-    company: str
