@@ -63,13 +63,13 @@ def count_fee_and_save_to_db(element) -> None:
         f"discounted_cost:{discounted_cost}",
         f"tech_fee:{tech_fee}"
     )
-    data = BillingReportModel(
-        company=company,
-        total_cost=total_cost,
-        discounted_cost=discounted_cost,
-        tech_fee=tech_fee,
-    )
-    print("data is ->", data)
+    # data = BillingReportModel(
+    #     company=company,
+    #     total_cost=total_cost,
+    #     discounted_cost=discounted_cost,
+    #     tech_fee=tech_fee,
+    # )
+    # print("data is ->", data)
     # save_billing_data_to_db(data)
 
 

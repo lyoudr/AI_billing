@@ -98,3 +98,34 @@ def import_gcp_bill():
     return gen_api_response(ApiCode.SUCCESS, 'File uploaded and data imported to database successfully')
 
 
+@api.route('/count_billing', methods = ['POST'])
+@swag_from({
+    "summary": "Handle GCS data",
+    "description": "Process gcs data",
+    "parameters": [
+        {
+            "name": "gcs_path",
+            "in": "body",
+            "required": True,
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "gcs_path": {
+                        "type": "string",
+                        "example": "gs://bucket_name/filename"
+                    }
+                }
+            }
+        }
+    ],
+    "responses": {
+        "200": {
+            "description": "Process data successfully."
+        }
+    }
+})
+def process_data():
+    handle_csv_billing_data()
+    return gen_api_response(ApiCode.SUCCESS, 'Process data in pipeline and store to database.')
+
+
