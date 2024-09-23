@@ -1,6 +1,3 @@
-import sys
-sys.path.append("ann_app")
-
 from ann_app.utils.db_session import get_db 
 from ann_app.db_models.billing import BillingReport
 from ann_app.models.billing import BillingReportModel
@@ -66,14 +63,14 @@ def count_fee_and_save_to_db(element) -> None:
         f"discounted_cost:{discounted_cost}",
         f"tech_fee:{tech_fee}"
     )
-    # data = BillingReportModel(
-    #     company=company,
-    #     total_cost=total_cost,
-    #     discounted_cost=discounted_cost,
-    #     tech_fee=tech_fee,
-    # )
-    # print("data is ->", data)
-    # save_billing_data_to_db(data)
+    data = BillingReportModel(
+        company=company,
+        total_cost=total_cost,
+        discounted_cost=discounted_cost,
+        tech_fee=tech_fee,
+    )
+    print("data is ->", data)
+    save_billing_data_to_db(data)
 
 
 def transform_and_save_data(billing_data) -> None:
@@ -82,7 +79,7 @@ def transform_and_save_data(billing_data) -> None:
         billing_data
         # Map Phase `Map(k1, k2) → list(k2,v2)`
         | 'Group by Company' >> beam.Map(
-            lambda billing: (billing[2], billing[1])
+            lambda billing: (billing.company, billing.cost)
         )
         # Map Phase >> beam.ParDo(print) # This is not worked, as it is a
         # whole ParDo, and afterward Map is not worked
@@ -113,7 +110,9 @@ def handle_csv_billing_data(gcs_path: str, save_main_session=True):
         job_name='billing-service',
         temp_location='gs://ann-billing/temp/',
         region='asia-east1',
-        service_account_email="742937875290-compute@developer.gserviceaccount.com"
+        service_account_email="742937875290-compute@developer.gserviceaccount.com",
+        extra_packages=["gs://ann-5432/ann_app-0.1.tar.gz"],
+        requirements_file="/workspace/requirements.txt"
     )
     
     with beam.Pipeline(options=beam_options) as pipeline:
@@ -123,11 +122,11 @@ def handle_csv_billing_data(gcs_path: str, save_main_session=True):
             skip_header_lines=1
         )
 
-        # class Bill:
-        #     def __init__(self, service: str, cost: float, company: str):
-        #         self.service = service
-        #         self.cost = cost
-        #         self.company = company
+        class Bill:
+            def __init__(self, service: str, cost: float, company: str):
+                self.service = service
+                self.cost = cost
+                self.company = company
 
         # Parse csv file for apache beam
         class ParseCSV(beam.DoFn):
@@ -137,10 +136,10 @@ def handle_csv_billing_data(gcs_path: str, save_main_session=True):
                 reader = csv.reader([element])
                 row = next(reader)
                 service, cost, company = row[:3]
-                return [(
-                    service, 
-                    float(cost), 
-                    company
+                return [Bill(
+                    service=service, 
+                    cost=float(cost), 
+                    company=company
                 )]
         
         # Apply the ParseCSV ParDo function to parse the CSV data
