@@ -1,3 +1,6 @@
+import sys
+sys.path.append("ann_app")
+
 from ann_app.utils.db_session import get_db 
 from ann_app.db_models.billing import BillingReport
 from ann_app.models.billing import BillingReportModel
@@ -96,7 +99,7 @@ def transform_and_save_data(billing_data) -> None:
     )
 
 # handle billing data
-def handle_csv_billing_data(argv=None, save_main_session=True):
+def handle_csv_billing_data(gcs_path: str, save_main_session=True):
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '--input',
@@ -104,9 +107,7 @@ def handle_csv_billing_data(argv=None, save_main_session=True):
         default='gs://ann-billing/staging/billing_report.csv',
         help='Input file to process.'
     )
-    known_args, pipeline_args = parser.parse_known_args(argv)
     beam_options = PipelineOptions(
-        pipeline_args,
         runner='DataflowRunner',
         project='ann-project-390401',
         job_name='billing-service',
@@ -118,7 +119,7 @@ def handle_csv_billing_data(argv=None, save_main_session=True):
     with beam.Pipeline(options=beam_options) as pipeline:
         # Read data from the CSV file
         lines = pipeline | beam.io.ReadFromText(
-            known_args.input,
+            gcs_path,
             skip_header_lines=1
         )
 

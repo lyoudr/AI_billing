@@ -11,10 +11,7 @@ def create_app():
     app = Flask(__name__, instance_relative_config=True)
     # Set Flask configuration variables
     app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://ann:annpasswd@localhost:3306/billing'
-    app.config['PROJECT_ID'] = os.getenv('PROJECT_ID')
-    app.config['CASSANDRA_HOSTS'] = os.getenv('CASSANDRA_HOSTS')
-    app.config['CASSANDRA_PORT'] = os.getenv('CASSANDRA_PORT')
-    app.config['CASSANDRA_KEYSPACE'] = os.getenv('CASSANDRA_KEYSPACE')
+    app.config['GCP_PROJECT_ID'] = os.getenv('GCP_PROJECT_ID')
     # Blueprint 
     app.register_blueprint(api.api)
     # DataBase

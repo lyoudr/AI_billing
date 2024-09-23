@@ -22,7 +22,7 @@ def gcs_to_bigquery():
     """
     Import data from GCS to BigQuery
     """
-    project_id = current_app.config['PROJECT_ID']
+    project_id = current_app.config['GCP_PROJECT_ID']
     bq = BigQuery(project_id=project_id)
     bq.load_data_from_file(
         table_id=f'{project_id}.billing.report',

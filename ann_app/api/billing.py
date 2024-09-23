@@ -9,27 +9,6 @@ from flask import request
 from flasgger import swag_from
 import pandas as pd 
 
-
-@api.route(
-    "/count_billing", 
-    methods=["POST"]
-)
-@swag_from({
-    "tags": ["billing"],
-    "responses": {
-        "200": {
-            "description": "handle billing data"
-        }
-    }
-})
-def count_billing():
-    """
-    Handle billing data.
-    """
-    handle_csv_billing_data()
-    return gen_api_response(ApiCode.SUCCESS, 'process billing data successfully')
-
-
 @api.route('/import_gcp_bill', methods=['POST'])
 @swag_from({
     "summary": "Handle import gcp bill",
@@ -125,7 +104,9 @@ def import_gcp_bill():
     }
 })
 def process_data():
-    handle_csv_billing_data()
+    data = request.json
+    gcs_path = data.get('gcs_path')
+    handle_csv_billing_data(gcs_path)
     return gen_api_response(ApiCode.SUCCESS, 'Process data in pipeline and store to database.')
 
 

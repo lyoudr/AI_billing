@@ -1,19 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: aibilling
+  name: aibillingnew
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: aibilling
+      app: aibillingnew
   template:
     metadata:
       labels:
-        app: aibilling
+        app: aibillingnew
     spec:
+      serviceAccountName: ann-k8s-service-account
       containers:
-      - name: aibilling
+      - name: aibillingnew
         image: asia-east1-docker.pkg.dev/ann-project-390401/ann-repo/aibilling:latest
         imagePullPolicy: Always
         env:
@@ -22,11 +23,11 @@ spec:
             secretKeyRef:
               name: ann-secret
               key: APP_ENV
-        - name: PROJECT_ID
+        - name: GCP_PROJECT_ID
           valueFrom:
             secretKeyRef:
               name: ann-secret
-              key: PROJECT_ID
+              key: GCP_PROJECT_ID
         - name: REGION
           value: "asia-east1"
         - name: DB_NAME
