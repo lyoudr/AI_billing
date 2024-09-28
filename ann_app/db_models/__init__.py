@@ -1,12 +1,5 @@
 from sqlalchemy import MetaData
 from sqlalchemy.ext.declarative import declarative_base
-import os
-import sys
-
-
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../")))
-
 
 # The naming convention refers: https://alembic.sqlalchemy.org/en/latest/naming.html#integration-of-naming-conventions-into-operations-autogenerate
 meta = MetaData(
