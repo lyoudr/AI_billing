@@ -6,6 +6,10 @@ from sqlalchemy import pool
 from flask import current_app
 
 from alembic import context
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -16,7 +20,7 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-config.set_main_option('sqlalchemy.url', "mysql+pymysql://ann:annpasswd@localhost:3306/billing")
+config.set_main_option('sqlalchemy.url', os.getenv("SQLALCHEMY_DATABASE_URI"))
 
 # add your model's MetaData object here
 # for 'autogenerate' support

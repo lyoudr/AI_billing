@@ -107,27 +107,3 @@ class AnnLinearRegression():
         self.m = round(new_m, 2)
         self.b = round(new_b, 2)
         return self.m, self.b
-
-# -------------------------------------------------------------------------------------------------- #
-# Adagrand
-# w2 <- w1 - ada1/delta1 * g1
-# import math 
-
-# def adagrand(der_fun, old_der_val, lr, n, old_m) -> float:
-#    if old_m <= 0.001:
-#       return old_m
-#    delta = math.sqrt((der_fun(old_m) ** 2 + (old_der_val) ** 2))
-#    new_m = old_m - ((lr / delta) * der_fun(old_m))
-#    n += 1
-#    return adagrand(der_fun, der_fun(old_m), lr, n, new_m)
-
-# m, b = np.polyfit(X, Y, 1)
-
-# best_m_from_ada = adagrand(
-#    partial_derivative_m,
-#    partial_derivative_m(m),
-#    lr = 1,
-#    n = 1,
-#    old_m = m
-# )
-# print("best_m_from_adagrand is ->", best_m_from_ada)

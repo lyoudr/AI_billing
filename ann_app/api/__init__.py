@@ -7,6 +7,5 @@ api = Blueprint("api", __name__)
 from . import (
     billing,
     etl,
-    ai,
     kafka
 )
