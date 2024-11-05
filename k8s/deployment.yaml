@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: aibillingnew
+  name: aibilling
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: aibillingnew
+      app: aibilling
   template:
     metadata:
       labels:
-        app: aibillingnew
+        app: aibilling
     spec:
       serviceAccountName: ann-k8s-service-account
       containers:
-      - name: aibillingnew
+      - name: aibilling
         image: asia-east1-docker.pkg.dev/ann-project-390401/ann-repo/aibilling:latest
         imagePullPolicy: Always
         env:
@@ -40,6 +40,8 @@ spec:
           value: "5433"
         - name: DB_HOST
           value: "127.0.0.1"
+        - name: KAFKA_SERVER
+          value: "bootstrap.ann.asia-east1.managedkafka.ann-project-390401.cloud.goog:9092"
         ports:
         - containerPort: 80
         resources:
